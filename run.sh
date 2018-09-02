@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "Starting ElasticSearch $ES_VERSION"
+
 BASE=/elasticsearch
 
 # allow for memlock if enabled
@@ -52,11 +54,14 @@ rm -rf /elasticsearch/modules/x-pack/x-pack-ml
 
 # run
 if [[ $(whoami) == "root" ]]; then
-    chown -R elasticsearch:elasticsearch $BASE
-    chown -R elasticsearch:elasticsearch /data
+	echo "Changing ownership of $BASE folder"
+	find . -type f -print0 | xargs -0 chown elasticsearch:elasticsearch $BASE
+
+	echo "Changing ownership of /data folder"
+	find . -type f -print0 | xargs -0 chown elasticsearch:elasticsearch /data
     exec su-exec elasticsearch $BASE/bin/elasticsearch $ES_EXTRA_ARGS
 else
-    # the container's first process is not running as 'root', 
+    # the container's first process is not running as 'root',
     # it does not have the rights to chown. however, we may
     # assume that it is being ran as 'elasticsearch', and that
     # the volumes already have the right permissions. this is
